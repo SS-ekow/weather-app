@@ -5,6 +5,12 @@ import Image from "next/image";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { format, parseISO } from "date-fns";
+import Container from "@/components/container";
+import { convertKelvinToCelsius } from "@/utils/convertKelvinToCelsius";
+import WeatherIcon from "@/components/WeatherIcon";
+import { getDayOrNight } from "@/utils/getDayOrNight";
+import WeatherDetails from "@/components/WeatherDetails";
+
 interface WeatherData {
   cod: string;
   message: number;
@@ -93,14 +99,84 @@ export default function Home() {
           <div>
             <h2 className="flex gap-1 text-2xl items-end">
                <p className="text-lg">{format(parseISO(firstData?.dt_txt ?? ""), "EEEE")}</p>
-               <p className="text-lg">({format(parseISO(firstData?.dt_txt ?? ""), "dd.MM.yyyy")})</p>
+               <p className="text-lg">({format(parseISO(firstData?.dt_txt ?? ""), "dd/MM/yyyy")})</p>
             </h2>
+            <Container className="gap-10 px-6 items-center">
+              {/* temperature */}
+              <div className="flex flex-col px-4 ">
+                <span className="text-5xl">
+                {convertKelvinToCelsius(firstData?.main.temp ?? 0)}°
+                </span>
+                <p className="text-xs space-x-1 whitespace-nowrap">
+                  <span>Feels like</span>
+                  <span>
+                    {convertKelvinToCelsius(firstData?.main.feels_like ?? 0)}°
+                  </span>
+                </p>
+                <p className="text-xs space-x-2">
+                  <span>
+
+                  {convertKelvinToCelsius(firstData?.main.temp_max ?? 0)}°↑ {" "}
+                  </span>
+                  <span>
+                  {" "}
+                  {convertKelvinToCelsius(firstData?.main.temp_min ?? 0)}°↓
+                  </span>
+
+                </p>
+                
+              </div>
+              {/* time and weather icon */}
+              <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between pr-3">
+
+                {
+                  data?.list.map((d, i)=>(
+
+                    <div 
+                    className="flex flex-col justify-between gap-2 items-center text-xs font-semibold" 
+                    key={i}>
+                      <p className="whitespace-nowrap">
+                        {format(parseISO(d.dt_txt), "h:mm a")}
+                      </p>
+                      <WeatherIcon 
+                      iconName= {getDayOrNight(d.weather[0].icon, d.dt_txt)}/>
+                      <p>
+                        {convertKelvinToCelsius(d.main.temp ?? 0)}°
+                      </p>
+
+
+                    </div>
+                  )
+                  )
+                }
+              </div>
+                  
+              
+            </Container>
+          </div>
+          <div className="flex gap-4 pt-4">
+            <Container className="w-fit justify-center flex-col px-4 items-center">
+              <p className="capitalize text-center">{firstData?.weather[0].description}{" "}</p>
+              <WeatherIcon 
+                      iconName= {getDayOrNight(firstData?.weather[0].icon ?? '', firstData?.dt_txt ?? '')}/>
+            </Container>
+
+            <Container className="bg-green-300/80 px-6 gap-4 justify-between overflow-x-auto">
+              {/* <WeatherDetails 
+              visibility={firstData}
+              /> */}
+
+            </Container>
+
           </div>
 
         </section>
 
         {/* seven day forecast data */}
-        <section className="forecast"></section>
+        <section className="forecast flex w-full flex-col gap-4">
+          <p className="text-2xl">Forecast (7days)</p>
+
+        </section>
       </main>
       
     </div>
